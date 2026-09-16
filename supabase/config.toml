@@ -2,3 +2,10 @@
 verify_jwt = false
 # Function validates the publishable app key; customer submissions are anonymous.
 # Rate limits are enforced in SQL. Never grant anonymous execute on submit_job.
+
+[functions.create-lead-checkout]
+verify_jwt = true
+
+[functions.stripe-webhook]
+verify_jwt = false
+# Stripe authenticates this endpoint with its webhook signature.
