@@ -246,6 +246,8 @@
       font-weight: 700;
     }
 
+    button:disabled { opacity: .6; cursor: not-allowed; }
+    .job { overflow-wrap: anywhere; }
     footer {
       background: #101827;
       color: #cbd5e1;
@@ -324,12 +326,12 @@
 
     <div class="card">
       <h3>2. Passende Betriebe</h3>
-      <p>JOBMARIO ordnet den Auftrag den passenden Gewerken und Regionen zu.</p>
+      <p>Ihr Auftrag wird geprüft und nach Freigabe für Betriebe sichtbar.</p>
     </div>
 
     <div class="card">
       <h3>3. Kontakt herstellen</h3>
-      <p>Interessierte Betriebe können passende Aufträge übernehmen.</p>
+      <p>Die Kontaktvermittlung befindet sich im Aufbau.</p>
     </div>
   </div>
 </section>
@@ -378,7 +380,7 @@
         <div class="full">
           <label for="description">Projektbeschreibung</label>
           <textarea
-            id="description"
+            id="description" minlength="10" maxlength="4000"
             placeholder="Was soll gemacht werden? Größe, Zustand, besondere Wünsche..."
             required
           ></textarea>
@@ -386,12 +388,12 @@
 
         <div>
           <label for="plz">PLZ</label>
-          <input id="plz" type="text" inputmode="numeric" placeholder="42103" required>
+          <input id="plz" pattern="[0-9]{5}" maxlength="5" type="text" inputmode="numeric" placeholder="42103" required>
         </div>
 
         <div>
           <label for="city">Ort</label>
-          <input id="city" type="text" placeholder="Wuppertal" required>
+          <input id="city" minlength="2" maxlength="100" type="text" placeholder="Wuppertal" required>
         </div>
 
         <div>
@@ -408,25 +410,25 @@
 
         <div>
           <label for="name">Name</label>
-          <input id="name" type="text" placeholder="Vor- und Nachname" required>
+          <input id="name" minlength="2" maxlength="100" type="text" placeholder="Vor- und Nachname" required>
         </div>
 
         <div>
           <label for="phone">Telefon</label>
-          <input id="phone" type="tel" placeholder="+49 ..." required>
+          <input id="phone" minlength="5" maxlength="40" type="tel" placeholder="+49 ..." required>
         </div>
 
         <div>
           <label for="email">E-Mail</label>
-          <input id="email" type="email" placeholder="name@email.de" required>
+          <input id="email" minlength="1" maxlength="254" type="email" placeholder="name@email.de" required>
         </div>
 
       </div>
 
       <button class="submit" type="submit">Auftrag kostenlos einstellen</button>
 
-      <div class="success" id="success">
-        ✅ Auftrag wurde gespeichert. JOBMARIO sucht jetzt nach passenden Betrieben.
+      <div class="success" id="success" role="status" aria-live="polite">
+        
       </div>
     </form>
   </div>
@@ -438,118 +440,19 @@
     Passende Projekte für Handwerker und Bauunternehmen.
   </p>
 
-  <div class="job-list" id="jobList">
+  <p id="listStatus" role="status" aria-live="polite"></p>
+  <button id="refreshJobs" type="button" class="secondary">Aufträge aktualisieren</button>
+  <div class="job-list" id="jobList"></div>
 
-    <div class="job">
-      <div class="job-top">
-        <div>
-          <div class="job-category">Innenausbau</div>
-          <h3>Wohnung renovieren</h3>
-        </div>
-        <div class="price">5.000–10.000 €</div>
-      </div>
-
-      <div class="job-meta">
-        📍 Wuppertal · Start: kurzfristig
-      </div>
-
-      <div class="locked">
-        🔒 Kontaktdaten gesperrt – Lead freischalten
-      </div>
-    </div>
-
-  </div>
 </section>
 
 <footer>
   © 2026 JOBMARIO · Deutschland
 </footer>
 
-<script>
-  function goToForm() {
-    document.getElementById("auftrag").scrollIntoView({
-      behavior: "smooth"
-    });
-  }
-
-  function goToJobs() {
-    document.getElementById("jobs").scrollIntoView({
-      behavior: "smooth"
-    });
-  }
-
-  const form = document.getElementById("jobForm");
-  const success = document.getElementById("success");
-  const jobList = document.getElementById("jobList");
-
-  function loadJobs() {
-    const jobs = JSON.parse(localStorage.getItem("jobmario_jobs") || "[]");
-
-    jobs.forEach(job => {
-      addJobCard(job);
-    });
-  }
-
-  function addJobCard(job) {
-    const card = document.createElement("div");
-    card.className = "job";
-
-    card.innerHTML = `
-      <div class="job-top">
-        <div>
-          <div class="job-category">${job.category}</div>
-          <h3>${job.description.substring(0,55)}${job.description.length > 55 ? "..." : ""}</h3>
-        </div>
-        <div class="price">${job.budget}</div>
-      </div>
-
-      <div class="job-meta">
-        📍 ${job.plz} ${job.city} · ${job.when}
-      </div>
-
-      <div class="locked">
-        🔒 Kontaktdaten gesperrt – Lead freischalten
-      </div>
-    `;
-
-    jobList.prepend(card);
-  }
-
-  form.addEventListener("submit", function(e) {
-    e.preventDefault();
-
-    const job = {
-      category: document.getElementById("category").value,
-      budget: document.getElementById("budget").value,
-      description: document.getElementById("description").value,
-      plz: document.getElementById("plz").value,
-      city: document.getElementById("city").value,
-      when: document.getElementById("when").value,
-      name: document.getElementById("name").value,
-      phone: document.getElementById("phone").value,
-      email: document.getElementById("email").value,
-      createdAt: new Date().toISOString()
-    };
-
-    const jobs = JSON.parse(localStorage.getItem("jobmario_jobs") || "[]");
-    jobs.push(job);
-    localStorage.setItem("jobmario_jobs", JSON.stringify(jobs));
-
-    addJobCard(job);
-
-    form.reset();
-    success.style.display = "block";
-
-    setTimeout(() => {
-      success.scrollIntoView({
-        behavior: "smooth",
-        block: "center"
-      });
-    }, 100);
-  });
-
-  loadJobs();
-</script>
+<script src="config.js"></script>
+<script src="app.js"></script>
 
 </body>
 </html>
+
