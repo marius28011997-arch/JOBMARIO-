@@ -9,3 +9,6 @@ verify_jwt = true
 [functions.stripe-webhook]
 verify_jwt = false
 # Stripe authenticates this endpoint with its webhook signature.
+
+[functions.verify-lead-payment]
+verify_jwt = true
